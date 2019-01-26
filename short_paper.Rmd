@@ -1,0 +1,130 @@
+---
+title: "Short Paper"
+output: html_document
+---
+
+```{r, echo=FALSE}
+yr <- read.csv("data_viz_static/sqf_year_race_8_total.csv")
+yr <- transform(yr, race_w_hisp.ord  = factor( 
+yr$race_w_hisp, levels=c('B', 'H', 'W', 'O', 'A'), ordered =TRUE))
+yr <- yr[order(-xtfrm(yr$race_w_hisp.ord)), ]
+yr$pct <- yr$pct / 1000
+```
+
+Stop and Frisk is a NYPD policy that was mainly started under Police Commissioner William Bratton. It is associated with the "broken windows" theory - that cracking down on small crimes will help prevent more serious ones - and allows police officers to stop, question, and search people without a warrant or suspicion of a crime. 
+
+The number of stops peaked in 2011, along with public outrage about the practice. The policy was heavily criticized for the high amount of force used, the lack of evidence that it improved safety, and most importantly, the fact that most of the people stopped were black or hispanic. Neither the Mayor or Police Commissioner provided an adequate explanation for any of those issues. 
+
+In May 2010 officer Adrian Schoolcraft sent the Village Voice recordings that documented orders he had received to stop, frisk, and arrest black people specifically in the Bedford-Stuyvesant neighborhood. This was concrete evidence of both the goals behind the policy and how it was carried out. Two years later protestors silently marched from lower Harlem to then-Mayor Bloomberg's house on the Upper East Side, demanding that Stop-and-Frisk be ended. That August the practice was deemed unconstitutional.  
+
+```{r, echo=FALSE}
+p <- ggplot(yr, aes(x = year, y=pct, , fill = race_w_hisp.ord))
+p + geom_area()  + scale_fill_brewer(palette="Set2") +
+  xlab("Year") + ylab("Number of Stops (in Thousands)") + 
+  scale_x_continuous(breaks=seq(2009,2017,1), expand = c(0.00,0.00)) +
+  scale_y_continuous(expand=c(0,0), breaks=seq(0, 1000, 200)) + expand_limits(y = c(0, 1000)) +
+  ggtitle(label = "Stop-and-Frisk in NYC peaked in 2011; \noverwhelmingly affected Black and Hispanic populations") +
+  labs(caption="Data Source: NYPD Stop, Question, and Frisk Database") +
+  geom_vline(xintercept=2010.416, color="darkmagenta", linetype="solid") +
+  geom_vline(xintercept=2012.5, colour="dark green", linetype="solid") +
+  annotate("text", x = 2010.5, y = 500, label = "Black non-Hispanic", fontface=2, color="white") +
+  annotate("text", x = 2010.5, y = 235, label = "Hispanic", color="white",fontface=2) +
+  annotate("text", x = 2010.5, y = 70, label = "White non-Hispanic", color="white", fontface=2) +
+  annotate("text", x = 2010.5, y = 40, label = "Other", color="white", fontface=2) +
+  annotate("text", x = 2010.5, y = 15, label = "Asian", color="white", fontface=2) +
+  geom_hline(yintercept=seq(0, 600, by=200), colour="white", linetype="dashed") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust=0.5), panel.background = element_rect(fill = "white"),
+        legend.position="none") +
+  geom_text(aes(x= 2012.55, y = 450, hjust = 0, label="March against \n Stop-And-Frisk \n (June 2012)"),  color="dark green") +
+  geom_text(aes(x=2010.45, y = 850, hjust=0, label="Village Voice publishes \n misconduct reports \n (May 2010)"), color="darkmagenta")
+```
+
+Police officers could stop people on the street for a variety of reasons, including extremely undefined ones such as "furtive movements" or "wearing clothing indicative of a crime". However, the stops rarely yielded information about a crime, or even possession of a weapon, as seen below.  
+
+```{r, echo=FALSE}
+wf <- read.csv('wf.csv')
+```
+```{r, echo=FALSE}
+ww <- ggplot(wf, aes(fill = forcats::fct_rev(weapon_found), y=num_stops, x=year)) 
+
+ww + geom_bar(stat="identity") + xlab("Year") + ylab("Number of Stops (in Thousands)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+    plot.title = element_text(hjust = 0.5, face="bold"), panel.background = element_rect(fill = "white"), plot.subtitle = element_text(hjust=0.5), legend.position = c(0.9, 0.6)) +
+  scale_x_continuous(breaks=seq(2009,2017,1), expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0))  +
+  scale_fill_manual(values=c("#d60a29", "#c6c2c3"),
+    name="",
+    breaks=c("Y", "N"),
+    labels=c("Weapon Found", "No Weapon Found")) +
+  labs(title="Few weapons found through NYC Stop & Frisk Stops", 
+    subtitle="Knives, Pistols, Assault Weapons, Rifles, and Machine Guns\nfound during NYPD stops from 2009 - 2016") +
+  labs(caption="Data Source: NYPD Stop, Question, and Frisk Database") 
+
+```
+Stop-and-frisk gave officers the power to detain anyone on the street, and to search them right then and there. We have seen that the majority of stops involved black or hispanic individuals. However, whether a person was frisked once they had already been stopped also varied greatly based on race. 
+
+```{r, echo=FALSE}
+fr2 <- read.csv("Documents/Winter2019/data_viz/data/fr2.csv")
+```
+```{r, echo=FALSE}
+f <- ggplot(data = fr2)
+f +
+  geom_mosaic(aes(product(race_w_hisp), fill=race_w_hisp,alpha=frisked), na.rm=TRUE) +
+  theme(legend.position="none",plot.title = element_text(hjust = 0.5, face="bold"), 
+        plot.subtitle=element_text(hjust=0.5), axis.text = element_blank(), 
+        panel.background = element_rect(fill = "white"), axis.ticks = element_line(color = "white")) +   scale_fill_brewer(palette="Accent") +
+  xlab('Stop-and-frisk stops') + ylab("Percentage Frisked") +
+  labs(title="Is everyone who is stopped frisked?", 
+       subtitle="People who were stopped from 2009 - 2016 by race/ethnicity",
+       caption="Data Source: NYPD Stop, Question, and Frisk Database") +
+  annotate("text", x = .26, y = .75, label = "Black non-Hispanic \n\n 58% frisked",fontface=2,color="black") +
+  annotate("text", x = .68, y = .75, label = "Hispanic \n\n 59% frisked", fontface=2, color="black") +
+  annotate("text", x = .92, y = .75, label = "Other \n(incl. White) \n\n 47% frisked", fontface=2, color="black")
+```
+```{r, echo=FALSE}
+ct <- read.csv("Documents/Winter2019/data_viz/data/ct.csv")
+```
+
+As in any major city, crimes take place in NYC at almost all times of day or night. When a crime is reported the exact time, date, and location of the occurence is noted, along with other information. More crimes happen between about 3pm to 7pm in the evening, and around noon. The number of crimes is also higher in the springtime, from March to June, that at other times of the year. 
+
+```{r, echo=FALSE}
+p <- ggplot(ct, aes(Hour, Month)) 
+p + geom_tile(aes(fill = Crimes.Called.In)) + scale_fill_gradient(low='white', high='navyblue', name="Crimes Reported") +
+  xlab("Time Crime Occurred") + ylab("") + 
+  scale_y_continuous(breaks=c(3,6,9,12), expand=c(0,0), 
+      labels=c("Mar","June","Sept","Dec")) +
+  scale_x_continuous(breaks=c(1,5,9,13,17,21), expand=c(0,0),
+      labels=c("1 a.m", "5 a.m.", "9 a.m.", "1 p.m.", "5 p.m.", "9 p.m.")) +
+  labs(title="Most crimes take place during the evening and in the springtime.", 
+       subtitle="Dates and times crimes occur (2009 - 2016)") +
+  theme(panel.background = element_blank(), plot.title = element_text(hjust = 0.5, face='bold'),
+        plot.subtitle = element_text(hjust=0.5)) 
+```
+
+The next topic I was interested in was which crimes were the most common in NYC. A question that quickly came up was how to measure that - by the number of complaints or the number of actual arrests. This discrepancy varies greatly from crime to crime. Charges of "harassment 2" make up almost 15% of reported crimes to the NYPD but there are very few arrests for that offense. In contrast "dangerous drugs" account for about 5% of complaints called in but 18% of arrests. 
+
+```{r, echo=FALSE}
+acd <- read.csv("Documents/Winter2019/data_viz/data/acd.csv")
+acd$offense <- factor(acd$offense, levels = acd$offense[order(acd$diff)])
+```
+```{r,echo=FALSE}
+
+b <- ggplot(data = acd, aes(x=offense, y=diff, fill=offense)) + geom_bar(stat='identity')
+b + theme(panel.background = element_blank(), legend.position = "none", axis.text.x = element_blank(), axis.ticks.x = element_blank(), plot.title = element_text(hjust = 0.5, face='bold'),                 plot.subtitle=element_text(hjust=0.5)) + 
+  xlab("Offense Description") + 
+  ylab("% Reported  -  % Arrested") + expand_limits(y = c(-15, 15)) +
+  scale_y_continuous(breaks=c(-5,-10,-5,0,5,10,15), expand=c(0,0)) +
+  scale_fill_brewer(palette="Spectral") +
+  geom_text(aes(x= 0.6, y = -6, hjust = 0, label="Harassment")) +
+  geom_text(aes(x= 1.7, y = -5, hjust = 0, label="Petit\nLarceny")) +
+  geom_text(aes(x= 2.7, y = -3., hjust = 0, label="Criminal\nMischief")) +
+  geom_text(aes(x= 3.6, y = 2.5, hjust = 0, label="Vehicle and\nTraffic Laws")) +
+  geom_text(aes(x= 4.6, y = 4, hjust = 0, label="Theft (Other)"))+
+  geom_text(aes(x= 5.6, y = 7.5, hjust = 0, label="Dangerous\nDrugs")) +
+  labs(title="The most-reported crimes do not make up the largest share of arrests",
+              subtitle="Offenses by share of total complaints/arrests 2009 - 2016") +
+  geom_hline(yintercept=seq(-15, 15, by=5), colour="white", linetype="dashed") 
+
+```
