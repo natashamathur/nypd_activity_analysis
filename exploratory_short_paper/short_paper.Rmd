@@ -73,6 +73,7 @@ ww + geom_bar(stat="identity") + xlab("Year") + ylab("Number of Stops (in Thousa
   labs(caption="Data Source: NYPD Stop, Question, and Frisk Database") 
 
 ```
+
 Stop-and-frisk gave officers the power to detain anyone on the street, and to search them right then and there. We have seen that the majority of stops involved black or hispanic individuals. However, whether a person was frisked once they had already been stopped also varied greatly based on race. 
 
 ```{r, echo=FALSE}
