@@ -1,0 +1,258 @@
+---
+title: "Exploring NYPD activity from 2009 - 2016"
+subtitle: "Theming and Design: Colorful Simplicity"
+author: "Natasha Mathur"
+output:
+  html_document: 
+    code_folding: hide
+    df_print: paged 
+---
+```{r'', include=FALSE}
+library(here)
+library(ggplot2)
+library(dplyr)
+library(ggmosaic)
+options(scipen=10000)
+options(warn=-1)
+library(extrafont)
+```
+### Thoughts on Theme
+
+When choosing the elements to include in my theme I wanted my graphs to have a clean, bright aesthetic. To this end, the backgrounds are white and most of the gridlines and axis lines are removed. Axis tick marks and numerical labels are left for ease of reading quantitative graphs, but legends are removed or labeled directly on the graph as much as possible. 
+
+The colors chosen for this theme are bold but not dark colors. They are intended to make the graphs easier to read and to stand in stark contrast with the black-and-white other lines and text. The main color, a bright purple, is also used as a highlight color. It is present in every graph and helps tie them together. When other colors aren't necessary the purple is contrasted with a light grey color. I wanted the color choices to be easy to distinguish, but not necessarily denote something positive or negative. 
+
+```{r}
+ncm_colors <- c("#C732D5", "#8AC437", "#F65D3A","#4369EB", "#32D59B", "#EDA03C")
+ncm_colors_names <- c('Purple', 'Green', 'Orange', 'Blue', 'Teal', 'Yellow')
+ncm_colors_wgrey <- c("#C732D5", "#8AC437", "#F65D3A","#4369EB", "#32D59B", "#EDA03C", "#F4F4F4")
+ncm_colors_scaled <- c("#C732D5", "#F65D3A",  "#EDA03C", "#32D59B","#8AC437", "#4369EB")
+ncm_highlight <-c("#C732D5")
+ncm_contrast <- c("#F4F4F4")
+ncm_font <- "Helvetica"
+ncm_theme <- theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust=0.5), panel.background = element_rect(fill = "white"),
+        legend.position="none", text=element_text(family=ncm_font))
+ann_specs <- c(family=ncm_font, fontface=2, color="white")
+gl_specs <- c(color="white", linetype="dashed") 
+```
+
+  
+```{r}
+t <- read.csv("Documents/Winter2019/data_viz/data/theme.csv")
+t <- transform(t,color.ord  = factor( 
+t$color, levels=c('Purple', 'Green', 'Orange', 'Blue', 'Teal', 'Yellow', "Grey"), ordered =TRUE))
+t <- t[order(-xtfrm(t$color.ord)), ]
+
+ggplot(data=t) +
+geom_bar(stat="identity", aes(color.ord, val_y, group=1, fill=color.ord)) +
+  scale_fill_manual(values=ncm_colors_wgrey) + xlab("") + ylab("") + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust=0.5), panel.background = element_rect(fill = "white"),
+        legend.position="none", text=element_text(family=ncm_font), axis.ticks = element_blank(),
+        axis.text.y = element_blank()) +
+  labs(title="Color Palette for this Theme") + geom_hline(yintercept=6, colour="white", linetype="dashed") +
+  annotate("text", x = 1, y = 3, label = "#C73245", family=ncm_font, fontface=2, color="white") +
+  annotate("text", x = 2, y = 3, label = "#8AC437", family=ncm_font, fontface=2, color="white") +
+  annotate("text", x = 3, y = 3, label = "#F65D3A", family=ncm_font, fontface=2, color="white") +
+  annotate("text", x = 4, y = 3, label = "#4369EB", family=ncm_font, fontface=2, color="white") +
+  annotate("text", x = 5, y = 3, label = "#32D59B", family=ncm_font, fontface=2, color="white") +
+  annotate("text", x = 6, y = 3, label = "#EDA03C", family=ncm_font, fontface=2, color="white") +
+  annotate("text", x = 7, y = 3, label = "#F4F4F4", family=ncm_font, fontface=2, color="darkgrey")
+```
+
+
+
+```{r, echo=FALSE}
+yr <- read.csv("data_viz_static/sqf_year_race_8_total.csv")
+yr <- transform(yr, race_w_hisp.ord  = factor( 
+yr$race_w_hisp, levels=c('B', 'H', 'W', 'O', 'A'), ordered =TRUE))
+yr <- yr[order(-xtfrm(yr$race_w_hisp.ord)), ]
+yr$pct <- yr$pct / 1000
+```
+### Stop, Question, and Frisk
+
+
+Stop and Frisk is a NYPD policy that was mainly started under Police Commissioner William Bratton. It was based on an idea introduced in the 1982 "broken windows" paper by social scientists James Q. Wilson and George L. Kelling. Their analysis suggested that cracking down on small crimes like vandalism would help reduce the occurence of more serious ones. The policy allows police officers to stop, question, and search people without a warrant or suspicion of a crime. 
+
+The number of stops peaked in 2011, along with public outrage about the practice. The policy was heavily criticized for the high amount of force used, the lack of evidence that it improved safety, and most importantly, the fact that most of the people stopped were black or hispanic. Neither the Mayor or Police Commissioner provided an adequate explanation for any of those issues. 
+
+In May 2010 officer Adrian Schoolcraft sent the Village Voice recordings that documented orders he had received to stop, frisk, and arrest black people specifically in the Bedford-Stuyvesant neighborhood. This was concrete evidence of both the goals behind the policy and how it was carried out. Two years later protestors silently marched from lower Harlem to then-Mayor Bloomberg's house on the Upper East Side, demanding that Stop-and-Frisk be ended. That August the practice was deemed unconstitutional.  
+
+
+```{r}
+p <- ggplot(yr, aes(x = year, y=pct, , fill = race_w_hisp.ord))
+p + geom_area()  + scale_fill_manual(values=ncm_colors[-6])+
+  xlab("Year") + ylab("Number of Stops (in Thousands)") + 
+  scale_x_continuous(breaks=seq(2009,2017,1), expand = c(0.00,0.00)) +
+   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust=0.5), panel.background = element_rect(fill = "white"),
+        legend.position="none", text=element_text(family=ncm_font)) +
+  scale_y_continuous(expand=c(0,0), breaks=seq(0, 1000, 200)) + expand_limits(y = c(0, 1000)) +
+  labs(title= "Stop-and-Frisk in NYC peaked in 2011; \noverwhelmingly affected Black and Hispanic populations") +
+  labs(caption="Data Source: NYPD Stop, Question, and Frisk Database") +
+  geom_vline(xintercept=2010.416, color="#4369EB", linetype="solid") +
+  geom_vline(xintercept=2012.5, colour="#32D59B", linetype="solid") +
+  annotate("text", x = 2011, y = 500, label = "Black \nnon-Hispanic", family=ncm_font, fontface=1, color="white") +
+  annotate("text", x = 2011, y = 235, label = "Hispanic", family=ncm_font, fontface=1, color="white") +
+  annotate("text", x = 2011, y = 70, label = "White non-Hispanic", family=ncm_font, fontface=1, color="white") +
+  annotate("text", x = 2011, y = 40, label = "Other", family=ncm_font, fontface=1, color="white") +
+  annotate("text", x = 2011, y = 15, label = "Asian", family=ncm_font, fontface=1, color="white") +
+  geom_hline(yintercept=seq(0, 600, by=200), colour="white", linetype="dashed") +
+  geom_text(aes(x= 2012.55, y = 450, hjust = 0, label="March against \n Stop-And-Frisk \n (June 2012)"),  color="#32D59B", family=ncm_font, fontface=1) +
+  geom_text(aes(x=2010.45, y = 850, hjust=0, label="Village Voice publishes \n misconduct reports \n (May 2010)"), color="#4369EB", family=ncm_font, fontface=1)
+```
+
+
+Police officers could stop people on the street for a variety of reasons, including fairly vagues ones such as "furtive movements" or "wearing clothing indicative of a crime". While stops were inteneded to be made based on probably-cause standards, in reality the decision making was up to the officer and their supervisors. Despite the large number of people detained on the street, few weapons of any kind were found. The number of weapons found stays relatively constant even as the number of total stops varies greatly.   
+
+
+```{r, echo=FALSE}
+wf <- read.csv('wf.csv')
+```
+```{r''}
+ww <- ggplot(wf, aes(fill = forcats::fct_rev(weapon_found), y=num_stops, x=year))  + geom_bar(stat="identity") + xlab("Year") + ylab("Number of Stops (in Thousands)") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+    plot.title = element_text(hjust = 0.5, face="bold"), panel.background = element_rect(fill = "white"), plot.subtitle = element_text(hjust=0.4), legend.position =c(0.85, 0.6), text=element_text(family=ncm_font)) +
+  scale_x_continuous(breaks=seq(2009,2017,1), expand = c(0,0)) +
+  scale_y_continuous(breaks=seq(0,600,200), expand = c(0,0))  +
+  scale_fill_manual(values=c(ncm_highlight, ncm_contrast),
+    name="",
+    breaks=c("Y", "N"),
+    labels=c("Weapon Found", "No Weapon Found")) +
+ labs(title="Few weapons found through NYC Stop & Frisk Stops", 
+   subtitle="Knives, Pistols, Assault Weapons, Rifles, and Machine Guns\nfound during NYPD stops from 2009 - 2016", caption="Data Source: NYPD Stop, Question, and Frisk Database") 
+ww
+```
+
+
+Stop-and-frisk gave officers the power to detain anyone on the street, and to search them immediately. Previous graphs show that the majority of stops involved black or hispanic individuals. Further, whether a person was frisked once they had already been stopped also varied greatly based on race. 
+
+
+```{r, echo=FALSE}
+fr2 <- read.csv("Documents/Winter2019/data_viz/data/fr2.csv")
+```
+```{r'', message=FALSE, warning=FALSE}
+f <- ggplot(data = fr2)
+f +
+  geom_mosaic(aes(product(race_w_hisp), fill=race_w_hisp,alpha=frisked), na.rm=TRUE) +
+  theme(legend.position="none",plot.title = element_text(hjust = 0.5, face="bold"), 
+        plot.subtitle=element_text(hjust=0.5), axis.text = element_blank(), 
+        panel.background = element_rect(fill = "white"), axis.ticks = element_line(color = "white"),
+        text=element_text(family=ncm_font)) + scale_fill_manual(values=ncm_colors[0:3]) +
+  xlab('Stop-and-frisk stops') + ylab("Percentage Frisked") +
+  labs(title="Is everyone who is stopped frisked?", 
+       subtitle="People who were stopped from 2009 - 2016 by race/ethnicity",
+       caption="Data Source: NYPD Stop, Question, and Frisk Database") +
+  annotate("text", x = .26, y = .75, label = "Black non-Hispanic \n\n 58% frisked",family=ncm_font, fontface=2, color="white") +
+  annotate("text", x = .68, y = .75, label = "Hispanic \n\n 59% frisked", family=ncm_font, fontface=2, color="white") +
+  annotate("text", x = .92, y = .75, label = "Other \n(incl. White) \n\n 47% frisked", family=ncm_font, fontface=2, color="white")
+```
+```{r, echo=FALSE}
+ct <- read.csv("Documents/Winter2019/data_viz/data/ct.csv")
+```
+### Arrests by and Complaints made to the NYPD 
+
+As in any major city, crimes take place in NYC at almost all times of day or night. When a crime is reported the exact time, date, and location of the occurence is noted, along with other information. More crimes happen between about 3pm to 7pm in the evening, and around noon. The number of crimes is also higher in the springtime, from March to June, than at other times of the year. 
+
+
+```{r, message=FALSE, warning=FALSE}
+p <- ggplot(ct, aes(Hour, Month)) 
+p + geom_tile(aes(fill = Crimes.Called.In)) + scale_fill_gradient2(low=ncm_contrast, high=ncm_highlight, name="Crimes Reported") +
+  xlab("Time Crime Occurred") + ylab("") + 
+  scale_y_continuous(breaks=c(3,6,9,12), expand=c(0,0), 
+      labels=c("Mar","June","Sept","Dec")) +
+  scale_x_continuous(breaks=c(1,5,9,13,17,21), expand=c(0,0),
+      labels=c("1 a.m", "5 a.m.", "9 a.m.", "1 p.m.", "5 p.m.", "9 p.m.")) +
+  labs(title="More crimes take place during the evening and in the springtime.", 
+       subtitle="Dates and times crimes occur (2009 - 2016)",
+      caption="Data Source: NYC Open Data Complaints Data")  +
+  theme(panel.background = element_blank(), plot.title = element_text(hjust = 0.5, face='bold'),
+        plot.subtitle = element_text(hjust=0.5), text=element_text(family=ncm_font)) +
+  geom_rect(xmin = 11.5, xmax = 20.5, ymin = 2.5, ymax = 6.5, fill=NA, size = 1, color="lightgrey", alpha = .2)
+
+```
+
+The next topic I was interested in was which crimes were the most common in NYC. A question that quickly came up was how to measure that - by the number of complaints or the number of actual arrests. This discrepancy varies greatly from crime to crime. Charges of "harassment 2" make up almost 15% of reported crimes to the NYPD but there are very few arrests for that offense. In contrast "dangerous drugs" account for about 5% of complaints called in but 18% of arrests. 
+
+
+```{r, echo=FALSE}
+acd <- read.csv("Documents/Winter2019/data_viz/data/g5.csv")
+acd$Percentage <- acd$perc * 100
+```
+```{r''}
+
+ggplot(acd, aes(x=Percentage, y=rank, color=type)) +
+   geom_line(aes(group = rank, color=c("#C732D5", "#C732D5", "#C732D5", "#C732D5",
+  "#C732D5","#C732D5", "#8AC437", "#8AC437","#8AC437", "#8AC437","#8AC437","#8AC437"))) +
+  geom_point(alpha=1, size=4) +
+  scale_color_manual(values=c("#C732D5", "#8AC437", "#C732D5", "#8AC437"),
+                     name="",
+                        breaks=c('arrest', 'complaint'),
+                        labels=c("Arrests", "Complaints")) +
+   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust=0.5), panel.background = element_rect(fill = "white"),
+         text=element_text(family=ncm_font), legend.key=element_blank()) +
+  scale_y_continuous(breaks=c(1,2,3,4,5,6), labels=c("Harassment 2", "Petit Larceny", "Criminal Mischief", "Vehicle and Traffic Laws", "Theft (Other)", "Dangerous Drugs")) + 
+  scale_x_continuous(breaks=seq(0,25,5)) + ylab("Offense") +
+  labs(title="The most-reported crimes do not make up the largest share of arrests",
+              subtitle="Offenses by share of total complaints/arrests 2009 - 2016",
+       caption="Data Source: NYC Open Data Complaints Data")
+```
+
+Each borough has a very different population, ranging from ~450k in Staten Island to 2.5 million residents in Brooklyn. These sizes makes them comparable to other small cities in their own right. In fact, Brookyln alone has a similar population to Chicago, the third largest city by population in the United States. It is therefore important to look at crime numbers in the context of where they happened. When looked at on a per capita basis, Manhattan and the Bronx have the most arrests per one hundred thousand residents. 
+
+```{r, echo=FALSE}
+ybc <- read.csv("Documents/Winter2019/data_viz/data/x.csv")
+```
+
+```{r}
+ggplot(ybc, aes(x=YR, y=ARRESTS_PER_100K, color=Borough, size=PERC_FELONIES)) +
+  geom_point(alpha=1)  + 
+  scale_fill_manual(values=ncm_colors[0:5]) +
+  scale_size_continuous(name="Percentage of Arrests that are Felonies",
+                        breaks=c(0.20, 0.25)) + 
+  scale_color_discrete(guide=FALSE) +
+  ylab("Arrests Per 100k") +xlab("Year") +
+  scale_x_continuous(breaks=seq(2013,2017,1))  +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust=0.5), panel.background = element_rect(fill = "white"),
+        text=element_text(family=ncm_font), legend.position = "top", legend.key=element_blank()) +
+   labs(title="The most crimes per 100k residents take place in Manhattan and the Bronx",
+        caption="Data Source: NYC Open Data Arrests Data") +
+  expand_limits(x = c(2013, 2017.6)) +
+   annotate("text", x = 2017.1, y = 2340, label = "Staten Island",  hjust=0, family=ncm_font, fontface=2, color="#C732D5") +
+annotate("text", x = 2017.1, y = 2560, label = "Queens",  hjust=0, family=ncm_font, fontface=2, color="#4369EB") +
+annotate("text", x = 2017.1, y = 4830, label = "Manhattan",  hjust=0, family=ncm_font, fontface=2, color="#32D59B") +
+annotate("text", x = 2017.1, y = 4540, label = "Bronx", hjust=0, family=ncm_font, fontface=2, color="#F65D3A") +
+annotate("text", x = 2017.1, y = 3140, label = "Brooklyn",  hjust=0, family=ncm_font, fontface=2, color="#8AC437") 
+```
+```{r, echo=FALSE}
+g7 <- read.csv("Documents/Winter2019/data_viz/data/g7.csv")
+
+```
+
+Across all non-residential locations the most common crimes are larceny and harassment. The prevalence of the crime differes from location to location. As expected the majority of crimes in department and chain stores are petit larceny (theft valued at <$1000). However at the ubituqitous bodegas the types of crimes committed are more varied. 
+```{r}
+
+p <- ggplot(data = g7, aes(x = OFNS_DESC, y = percentage))  +
+     facet_wrap(~PREM_TYP_DESC) + geom_bar(stat = "identity", color = ncm_contrast, aes(fill=OFNS_DESC)) + 
+  scale_x_discrete(labels=c("Grand\nLarceny", "Harassment", "Petit\n Larceny")) +xlab("") +
+  scale_fill_manual(values=ncm_colors[3:0]) +
+  scale_y_continuous(breaks=seq(0, 100, 25)) +
+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust=0.5), panel.background = element_rect(fill = "white"),
+        legend.position="none", text=element_text(family=ncm_font), strip.background = element_rect(fill=ncm_contrast), strip.text = element_text(color="black")) +
+  labs(title="Commonly reported crimes in non-residential locations",
+        caption="Data Source: NYC Open Data Complaints Data") +ylab("Percent of Total Crimes") 
+  
+p
+```
+
+
