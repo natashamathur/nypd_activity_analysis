@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>NATASHA'S SCATTER PLOT</title>
+    <link rel="stylesheet"  href="main.css">
+		<script type="text/javascript" src="../d3.js"></script>
+    <style type="text/css">
+      </style>
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+//Width and height
+      			var w = 1200;
+      			var h = 400;
+      			var padding = 80;
+
+            document.addEventListener('DOMContentLoaded', () => {
+              fetch('sun_eve.json')
+              .then(dataset => data.json())
+							.then(dataset => myVis(dataset))
+            });
+
+
+           d3.json("sun_eve.json", function (error, data) {
+               console.log(data)
+							 scatterplot(data);
+           });
+
+            var dataset = [[0,46912],[1.0,30536],[2.0,25004],[3.0,20735],
+            [4.0,17784], [5.0,14683], [6.0,16458], [7.0,27398],
+            [8.0,43815], [9.0,45397], [10.0,45704], [11.0,45198],
+            [12.0,62457],[13.0,49885],[14.0,55217],[15.0,61964],
+            [16.0,58120],[17.0,59202],[18.0,60971],[19.0,56774],
+            [20.0,56172],[21.0,50724],[22.0,46901],[23.0,42125]]
+
+	      			//Create scale functions
+	      			var xScale = d3.scaleLinear()
+	                      .domain([d3.max(dataset, function(d) { return d[0]; }),
+	                      d3.min(dataset, function(d) { return d[0]; })])
+	                  		.range([padding, w-padding*2]);
+
+	      			var yScale = d3.scaleLinear()
+	      								 .domain([d3.min(dataset, function(d) { return d[1]; }),
+	                       d3.max(dataset, function(d) {  return d[1]; })])
+	      								 .range([padding, h-padding*.5])
+	                       .nice();
+
+	      			var rScale = d3.scaleLinear()
+	      								 .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+	      								 .range([2,5])
+	                       .nice();
+
+	            //Define X axis
+	       			var xAxis = d3.axisBottom()
+	       							  .scale(xScale)
+	       							  .ticks(5)
+
+	                  //Define Y axis
+	      			var yAxis = d3.axisLeft()
+	      							  .scale(yScale)
+	      							  .ticks(5)
+
+      			//Create SVG element
+      			var svg = d3.select("body")
+      						.append("svg")
+      						.attr("width", w)
+      						.attr("height", h);
+
+      			//Create circles
+      			svg.selectAll("circle")
+      			   .data(dataset)
+      			   .enter()
+      			   .append("circle")
+      			   .attr("cx", function(d) {
+      			   		return xScale(d[0]);
+      			   })
+      			   .attr("cy", function(d) {
+      			   		return yScale(d[1]);
+      			   })
+      			   .attr("r", function(d) {
+      			   		return rScale(d[1])
+      			   })
+							 .attr("rush", function(d) {
+
+					      if ((6.5 < d[0]) && (d[0] < 9.5)) {
+					        return "#C732D5" })
+
+               .style('fill', function(d) {
+					      if ((6.5 < d[0]) && (d[0] < 9.5)) {
+					        return "#C732D5"}
+					      else if ((15.5 < d[0]) && (d[0] < 20)) {
+					          return "#C732D5"}
+					      else {
+					        return '#8AC437'}
+					    });
+
+							    // Legend
+							    svg.append("rect")
+							    .attr("x", 200)
+							    .attr("y",100)
+							    .attr("width", 20)
+							    .attr("height", 20)
+							    .attr("fill", "#C732D5");
+
+							    svg.append("rect")
+							    .attr("x", 200)
+							    .attr("y",130)
+							    .attr("width", 20)
+							    .attr("height", 20)
+							    .attr("fill", "#8AC437");
+
+							      svg.append("text")
+							      .attr("x", 225)
+							      .attr("y", 115)
+							      .text("Rush Hours")
+
+							      svg.append("text")
+							      .attr("x", 225)
+							      .attr("y", 145)
+							      .text("Non-Rush Hours")
+
+							      			//Create labels
+							      			svg.selectAll("text")
+							      			   .data(dataset)
+							      			   .enter()
+							      			   .append("text")
+							      			   .text(function(d) {
+							      			   		return d[1];
+							      			   })
+							      			   .attr("x", function(d) {
+							      			   		return xScale(d[0]-0.1);
+							      			   })
+							      			   .attr("y", function(d) {
+							      			   		return yScale(d[1]-1000);
+							      			   })
+							      			   .attr("font-family", "sans-serif")
+							      			   .attr("font-size", "11px")
+							      			   .attr("fill", "black");
+
+
+
+							               //Create X axis
+							         			svg.append("g")
+							         				.attr("class", "axis")
+							         				.attr("transform", "translate(0," + (padding*4.5) + ")")
+							         				.call(xAxis);
+
+							         			//Create Y axis
+							         			svg.append("g")
+							         				.attr("class", "axis")
+							         				.attr("transform", "translate(" + padding + ",0)")
+							         				.call(yAxis);
+
+							              // Title
+							                svg.append("text")
+							          .attr("x", (w / 2))
+							          .attr("y", (h - padding*4.75))
+							          .attr("text-anchor", "middle")
+							          .style("font-size", "16px")
+							          .style("text-decoration", "underline")
+							          .text("Crimes Against Women Over Time");
+
+							            // Subtitle
+							            svg.append("text")
+							            .attr("x", (w / 2))
+							            .attr("y", (h - padding*4.50))
+							            .attr("text-anchor", "middle")
+							            .style("font-size", "14px")
+							            .style("text-decoration", "underline")
+							            .text("Complaints Made to the NYPD in a 24 Hour Period");
+
+							    // x axis label
+							          svg.append("text")
+							    .attr("x", (w / 2))
+							    .attr("y", (h-padding/12))
+							    .attr("text-anchor", "middle")
+							    .style("font-size", "16px")
+							    .style("text-anchor", "underline")
+							    .text("Military Time");
+
+							    // y axis label
+							    svg.append("text")
+							    .attr("transform", "rotate(-90)")
+							    .attr("x", (-padding*2.5))
+							    .attr("y", (h/15))
+							    .attr("text-anchor", "middle")
+							    .attr("dy", "lem")
+							    .style("font-size", "16px")
+							    .style("text-anchor", "middle")
+							    .text("Complaints Made");
+
+							    // x axis label
+							          svg.append("text")
+							    .attr("x", (w -padding*2))
+							    .attr("y", (h-padding/12))
+							    .attr("text-anchor", "middle")
+							    .style("font-size", "12px")
+							    .style("text-anchor", "italic")
+							    .text("Source: NYPD Open Data");
+
+
+		</script>
+	</body>
+</html>
